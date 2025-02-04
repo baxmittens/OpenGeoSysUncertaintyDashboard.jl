@@ -1,0 +1,4 @@
+name = "OpenGeoSysUncertaintyDashboard"
+uuid = "edaf10e2-3a8c-4023-b694-440f2c6e3062"
+authors = ["Max Bittens <maximilian.bittens@bgr.de>"]
+version = "0.1.0"
