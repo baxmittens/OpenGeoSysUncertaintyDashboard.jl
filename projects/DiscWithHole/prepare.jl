@@ -12,7 +12,7 @@ additionalprojecfilespath=joinpath(PATH, "Misc")
 outputpath= joinpath(PATH, "Res")
 postprocfiles=["disc_with_hole_disc_with_hole.xdmf"]
 stochmethod=AdaptiveHierarchicalSparseGrid
-n_workers = 20
+n_workers = 5
 
 stochparampathes = loadStochasticParameters(joinpath(PATH,"StochasticParameters.xml"))
 	

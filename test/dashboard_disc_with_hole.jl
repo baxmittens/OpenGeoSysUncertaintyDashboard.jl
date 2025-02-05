@@ -39,7 +39,7 @@ vertices = transpose(xdmf_root_point.udata["geometry"][1:2,:,1])
 faces_quads = convert(Matrix{Int64},transpose(xdmf_root_point.udata["topology"][1:4,:].+1))
 faces = make_tri_mesh(faces_quads)
 unit_convs = Function[x->x for i = 1:4]
-units = [L"\text{Pa}", L"\text{Pa}", L"\text{Pa}", L"\text{Pa}"]
+units = [L"\text{N}", L"\text{N}", L"\text{N}", L"\text{N}"]
 mappingfuncs = Any[x->x for i = 1:4]
 
 polar = PolarFromCartesian()
@@ -49,8 +49,8 @@ r_coords = map(x->polar(x).r, eachrow(vertices))
 const pagewidth = 1200
 const pageheight = 720
 const fontsize_mainfig = 20
-const sliderlinewidth=15
-const sliderfontsize=18f0
+const sliderlinewidth=10
+const sliderfontsize=12f0
 const draw_freq = 0.5
 
 if @isdefined(redraw_limit) && isopen(redraw_limit)
@@ -60,7 +60,11 @@ end
 
 do_plot = Observable(0)
 mainfig=Figure(size=(pagewidth, pageheight), fontsize=fontsize_mainfig, title="Disc with hole");
+gridcontrols = mainfig[1:2,3:4] = GridLayout()
 
+rowgap!(gridcontrols,10)
+
+ax_bc = Axis(gridcontrols[1:2,1], aspect = DataAspect())
 ax_mesh_displacement_r = Axis(mainfig[1,1], title=L"u_r")
 ax_mesh_displacement_θ = Axis(mainfig[1,2], title=L"|u_{\theta}|")
 ax_mesh_sigma_rr = Axis(mainfig[3,1], title=L"\sigma_{rr}")
@@ -70,8 +74,11 @@ ax_mesh_sigma_zz = Axis(mainfig[3,4], title=L"\sigma_{zz}")
 
 allaxes = (ax_mesh_displacement_r, ax_mesh_displacement_θ, ax_mesh_sigma_rr, ax_mesh_sigma_θθ, ax_mesh_sigma_rθ, ax_mesh_sigma_zz)
 
+hidedecorations!(ax_bc)
+hidespines!(ax_bc)
+
 sg = Makie.SliderGrid(
-	mainfig[1,3:4],
+	gridcontrols[4,1],
 	[ 
 	(
 		label = Ogs6InputFileHandler.format_ogs_path(stoparam.path), 
@@ -86,7 +93,7 @@ sg = Makie.SliderGrid(
 )
 
 sg_options = Makie.SliderGrid(
-	mainfig[2,3:4],
+	gridcontrols[6,1],
 	(
 		label = "displ. mult.", 
 		range = 1:1:10, 
@@ -99,6 +106,10 @@ sg_options = Makie.SliderGrid(
 foreach(x->x.fontsize[]=sliderfontsize , sg.labels)
 foreach(x->x.fontsize[]=sliderfontsize , sg.valuelabels)
 foreach(x->x.halign[]=:left , sg.valuelabels)
+foreach(x->x.fontsize[]=sliderfontsize , sg_options.labels)
+foreach(x->x.fontsize[]=sliderfontsize , sg_options.valuelabels)
+foreach(x->x.halign[]=:left , sg_options.valuelabels)
+
 sliderobservables = [s.value for s in sg.sliders]
 set_close_to!(sg.sliders[end], 1.0)
 
@@ -196,6 +207,95 @@ plot_vertices_y = map!(Observable{Any}(), xdmf_asg, sg_options.sliders[1].value)
 	return verts
 end
 
+#function plot_arrow_right(scalex, scaley)
+#	x = [scalex < 0.0 ? 10.0 : 10 + 2*scalex for i = 1:5]
+#	y = [i for i = 1.0:2.0:9.0]
+#	dx = [2*scalex for i = 1:5]
+#	dy = [2*scaley for i = 1:5]
+#	arrows!(ax_bc, x, y, dx, dy)
+#end
+
+rightarrowx = map!(Observable{Any}(), do_plot) do _plotnow_
+	x = map(x->x[], sliderobservables)
+	scalex = x[1]
+	rightarrowx = [scalex > 0.0 ? 10.0 : 10 - 2*scalex for i = 1:5]
+	return rightarrowx
+end
+rightarrowdx = map!(Observable{Any}(), do_plot) do _plotnow_
+	x = map(x->x[], sliderobservables)
+	scalex = x[1]
+	rightarrowdx = [2*scalex for i = 1:5]
+	return rightarrowdx
+end
+rightarrowx_visible = map!(Observable{Any}(), do_plot) do _plotnow_
+	x = map(x->x[], sliderobservables)
+	scalex = x[1]
+	if isapprox(scalex, 0.0, atol=0.05)
+		return false
+	end
+	return true
+end
+rightarrowdy = map!(Observable{Any}(), do_plot) do _plotnow_
+	x = map(x->x[], sliderobservables)
+	scaley = x[2]
+	rightarrowdx = [2*scaley for i = 1:5]
+	return rightarrowdx
+end
+rightarrowy_visible = map!(Observable{Any}(), do_plot) do _plotnow_
+	x = map(x->x[], sliderobservables)
+	scaley = x[2]
+	if isapprox(scaley, 0.0, atol=0.05)
+		return false
+	end
+	return true
+end
+
+toparrowdx = map!(Observable{Any}(), do_plot) do _plotnow_
+	x = map(x->x[], sliderobservables)
+	scalex = x[3]
+	rightarrowdx = [2*scalex for i = 1:5]
+	return rightarrowdx
+end
+toparrowx_visible = map!(Observable{Any}(), do_plot) do _plotnow_
+	x = map(x->x[], sliderobservables)
+	scalex = x[3]
+	if isapprox(scalex, 0.0, atol=0.05)
+		return false
+	end
+	return true
+end
+
+toparrowy = map!(Observable{Any}(), do_plot) do _plotnow_
+	x = map(x->x[], sliderobservables)
+	scaley = x[4]
+	rightarrowy = [scaley > 0.0 ? 10.0 : 10 - 2*scaley for i = 1:5]
+	return rightarrowy
+end
+toparrowdy = map!(Observable{Any}(), do_plot) do _plotnow_
+	x = map(x->x[], sliderobservables)
+	scaley = x[4]
+	rightarrowdy = [2*scaley for i = 1:5]
+	return rightarrowdy
+end
+toparrowy_visible = map!(Observable{Any}(), do_plot) do _plotnow_
+	x = map(x->x[], sliderobservables)
+	scalex = x[4]
+	if isapprox(scalex, 0.0, atol=0.05)
+		return false
+	end
+	return true
+end
+
+ylims!(ax_bc, (-2, 13))
+xlims!(ax_bc, (-2, 13))
+
+mesh!(ax_bc, vertices, faces)
+
+arrows!(ax_bc, rightarrowx, [i for i = 1.0:2.0:9.0], rightarrowdx, [0.0 for i = 1:5], visible=rightarrowx_visible, arrowsize=5)
+arrows!(ax_bc, [10.5 for i = 1:5], [i for i = 1.0:2.0:9.0], [0.0 for i = 1:5], rightarrowdy, visible=rightarrowy_visible, arrowsize=5, color=:blue)
+arrows!(ax_bc, [i for i = 1.0:2.0:9.0], [10.5 for i = 1:5], toparrowdx, [0.0 for i = 1:5], visible=toparrowx_visible, arrowsize=5, color=:blue)
+arrows!(ax_bc, [i for i = 1.0:2.0:9.0], toparrowy, [0.0 for i = 1:5], toparrowdy, visible=toparrowy_visible, arrowsize=5)
+
 tricontourf!(ax_mesh_displacement_r, plot_vertices_x, plot_vertices_y, displacement_r, triangulation = faces)
 tricontourf!(ax_mesh_displacement_θ, plot_vertices_x, plot_vertices_y, displacement_θ, triangulation = faces)
 tricontourf!(ax_mesh_sigma_rr, plot_vertices_x, plot_vertices_y, sigma_rr, triangulation = faces)
@@ -211,6 +311,6 @@ Colorbar(mainfig[4,2], limits=sigma_θθ_limits, vertical=false, flipaxis=false,
 Colorbar(mainfig[4,3], limits=sigma_rθ_limits, vertical=false, flipaxis=false, tickformat=tickformat, ticklabelsize=10)
 Colorbar(mainfig[4,4], limits=sigma_zz_limits, vertical=false, flipaxis=false, tickformat=tickformat, ticklabelsize=10)
 
-redraw_limit = Timer(cb -> checkplot(), 0.1; interval=0.5)
+redraw_limit = Timer(cb -> checkplot(), 0.01; interval=0.05)
 
 display(mainfig)

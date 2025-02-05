@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Array julia:type="String,1">
-	./parameters/parameter/?neumann_force_top_x/values
-	./parameters/parameter/?neumann_force_top_y/values
-	./parameters/parameter/?neumann_force_right_x/values
-	./parameters/parameter/?neumann_force_right_y/values
-</Array>
