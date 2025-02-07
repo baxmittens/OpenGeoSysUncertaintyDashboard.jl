@@ -1,4 +1,17 @@
-name = "OpenGeoSysUncertaintyDashboard"
+name = "OpenGeoSysUncertaintyDashboards"
 uuid = "edaf10e2-3a8c-4023-b694-440f2c6e3062"
 authors = ["Max Bittens <maximilian.bittens@bgr.de>"]
 version = "0.1.0"
+
+[deps]
+Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+Observables = "510215fc-4207-5dde-b226-833fc4488ee2"
+Ogs6InputFileHandler = "711b9c6a-ebcb-49ea-83af-4d7ff437a08a"
+OpenGeoSysUncertaintyQuantification = "2b9e718a-2bbf-456a-af48-1d5a69fa48c6"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+
+[compat]
+Observables = "0.5"
+Ogs6InputFileHandler = "0.0.4"
+OpenGeoSysUncertaintyQuantification = "0.1.7"
+Printf = "1"
